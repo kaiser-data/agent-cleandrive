@@ -55,6 +55,9 @@ Files:
   everything else under the protected root stay locked.
 - Protected roots (~, ~/Documents, ~/Desktop, ~/Downloads, ~/Pictures,
   ~/Library) are refused as direct targets regardless of plan content.
+- Every archive (test, dry-run, real) first checks over SSH that `remote.path`
+  sits on the drive with `remote.uuid` (or at least not on the remote root fs)
+  and has room for the item + 5%; otherwise it is refused.
 - The dashboard binds to 127.0.0.1 only, and execution requires typing FREE.
 
 ## Categories

@@ -83,7 +83,7 @@ Found during a real cleanup session; both are small and block safe use.
   use `config.duTimeoutSec` (default 60) in `duKB()`, and record timed-out or
   `Operation not permitted` paths in `scan.blocked[]` with the reason
   (`"needs Full Disk Access"`) instead of silently dropping them.
-- **0.2 Remote target must be a mounted drive.** `testRemote()` reports
+- **0.2 Remote target must be a mounted drive.** ✅ done 2026-09-30 (`checkRemoteDrive()`, `remote.uuid`; dashboard disable still open). `testRemote()` reports
   "reachable" even when the archive disk is unplugged and the mount point is
   just an empty directory on the remote's system disk; `archive()` never
   checks. Add optional `remote.uuid` and verify before any rsync (test, dry-run

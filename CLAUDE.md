@@ -19,6 +19,10 @@ node bin/cleandrive.js skip <id…>
 node bin/cleandrive.js execute [--dry-run]
 node bin/cleandrive.js offload-dryrun  # rsync -n approved archive items
 node bin/cleandrive.js remote-test     # SSH reachability of configured remote
+node bin/cleandrive.js offload-candidates [--min=200] [--days=30]  # read-only
+node bin/cleandrive.js offload <file|dir…> [--dry-run]   # verified upload → .cloud stub
+node bin/cleandrive.js fetch <file|stub|dir…> [--dry-run]
+node bin/cleandrive.js offloaded | offload-verify | pin <path>
 node bin/cleandrive.js serve           # dashboard at http://localhost:4499
 ```
 
@@ -59,6 +63,11 @@ Files:
   sits on the drive with `remote.uuid` (or at least not on the remote root fs)
   and has room for the item + 5%; otherwise it is refused.
 - The dashboard binds to 127.0.0.1 only, and execution requires typing FREE.
+- Offload (docs/offload-strategy.md): the local file is unlinked only after the
+  remote object's sha256 equals the local hash AND the file is unchanged since
+  hashing. Refused: symlinks, hard links, open files (lsof), `~/Library`,
+  `.git`/`node_modules`/`.venv`, app/media library packages, protected paths,
+  pins. Remote objects are never deleted by offload/fetch. No daemons — ever.
 
 ## Categories
 

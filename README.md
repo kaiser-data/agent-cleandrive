@@ -148,6 +148,12 @@ node bin/cleandrive.js execute               # do it — logged to data/actions.
 | `execute [--dry-run]` | Run all approved actions |
 | `offload-dryrun` | `rsync -n` approved archive items to the remote |
 | `remote-test` | Check SSH reachability of the configured remote drive |
+| `offload <file\|dir…>` | iCloud-style: verified copy to the remote, leaves `<name>.cloud` ([strategy](docs/offload-strategy.md)) |
+| `fetch <file\|stub\|dir…>` | Bring offloaded files back (sha256-verified), removes the stub |
+| `offloaded` | List offloaded / fetched files |
+| `offload-candidates` | Big idle media + duplicates worth offloading (read-only) |
+| `offload-verify` | Re-hash every remote copy (scrub) |
+| `pin` / `unpin` | Keep a file or folder local, never propose it |
 
 ---
 

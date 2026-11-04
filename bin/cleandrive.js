@@ -6,9 +6,13 @@ import { DATA_DIR, readJson, fmtGB, loadConfig } from '../lib/util.js';
 import { runScan, CATEGORIES } from '../lib/scan.js';
 import { serve } from '../lib/server.js';
 import { loadPlan, setPlanItem, approvedItems, executeItem, testRemote, archive } from '../lib/actions.js';
+import { offloadPaths, fetchPaths, listOffloaded, findCandidates, verifyRemote, setPin } from '../lib/offload.js';
 
 const [, , cmd, ...args] = process.argv;
 const flag = (f) => args.includes(f);
+const num = (name, dflt) => { const a = args.find((x) => x.startsWith(`--${name}=`)); return a ? Number(a.split('=')[1]) : dflt; };
+const positional = () => args.filter((a) => !a.startsWith('--'));
+const out = (d) => process.stderr.write(d);
 
 function latest() {
   const scan = readJson(path.join(DATA_DIR, 'latest.json'));
@@ -102,6 +106,53 @@ switch (cmd) {
     }
     break;
   }
+  case 'offload': {
+    const ps = positional();
+    if (!ps.length) { console.error('usage: cleandrive offload <file|dir…> [--dry-run] [--min=MB]'); process.exit(2); }
+    const r = await offloadPaths(ps, { dryRun: flag('--dry-run'), minMB: num('min', 50), onData: out });
+    const ok = r.filter((x) => x.ok);
+    console.log(`${flag('--dry-run') ? 'dry-run: ' : ''}${ok.length}/${r.length} ok, ${fmtGB(ok.reduce((s, x) => s + (x.size || 0), 0) / 1024)}`);
+    process.exit(r.every((x) => x.ok) ? 0 : 1);
+    break;
+  }
+  case 'fetch': {
+    const ps = positional();
+    if (!ps.length) { console.error('usage: cleandrive fetch <file|file.cloud|dir…> [--dry-run]'); process.exit(2); }
+    const r = await fetchPaths(ps, { dryRun: flag('--dry-run'), onData: out });
+    console.log(`${flag('--dry-run') ? 'dry-run: ' : ''}${r.filter((x) => x.ok).length}/${r.length} ok`);
+    process.exit(r.every((x) => x.ok) ? 0 : 1);
+    break;
+  }
+  case 'offloaded': {
+    const l = listOffloaded();
+    if (flag('--json')) { console.log(JSON.stringify(l, null, 2)); break; }
+    const off = l.files.filter((f) => f.state === 'offloaded');
+    console.log(`offloaded: ${off.length} files, ${fmtGB(off.reduce((s, f) => s + f.size, 0) / 1024)} on the remote`);
+    for (const f of l.files) console.log(`  [${f.state.padEnd(9)}] ${fmtGB(f.size / 1024).padStart(8)}  ${f.path.replace(process.env.HOME, '~')}`);
+    if (l.pins.length) console.log(`pinned (keep local): ${l.pins.map((p) => p.replace(process.env.HOME, '~')).join(', ')}`);
+    break;
+  }
+  case 'offload-candidates': {
+    const r = await findCandidates({ minMB: num('min', 200), days: num('days', 30), allTypes: flag('--all-types'), dupes: !flag('--no-dupes'), onData: out });
+    if (flag('--json')) { console.log(JSON.stringify(r, null, 2)); break; }
+    const tot = r.candidates.reduce((s, c) => s + c.kb, 0);
+    console.log(`${r.candidates.length} candidates, ${fmtGB(tot)} (≥${r.minMB} MB, idle ≥${r.days}d)`);
+    for (const c of r.candidates.slice(0, 40)) {
+      console.log(`  ${fmtGB(c.kb).padStart(8)}  ${String(c.idleDays).padStart(4)}d  ${c.path.replace(process.env.HOME, '~')}${c.duplicateOf ? `  ⧉ duplicate of ${c.duplicateOf.replace(process.env.HOME, '~')}` : ''}`);
+    }
+    if (r.unreadable) console.log(`⚠ ${r.unreadable} paths not readable (macOS privacy / Full Disk Access)`);
+    break;
+  }
+  case 'offload-verify': {
+    const r = await verifyRemote({ onData: out });
+    console.log(r.bad.length ? `✗ ${r.bad.length} of ${r.checked} remote copies bad` : `✓ all ${r.checked} remote copies verified`);
+    process.exit(r.bad.length ? 1 : 0);
+    break;
+  }
+  case 'pin':
+  case 'unpin':
+    for (const p of positional()) console.log(`${cmd === 'pin' ? 'pinned' : 'unpinned'} ${setPin(p, cmd === 'pin')}`);
+    break;
   case 'remote-test': {
     const r = await testRemote();
     console.log((r.ok ? '✓ ' : '✗ ') + r.msg);
@@ -120,5 +171,13 @@ usage:
   cleandrive review <id…>           mark reviewed (unlocks rm for appdata/models)
   cleandrive execute [--dry-run]    run all approved actions
   cleandrive offload-dryrun         rsync -n approved archive items to remote
-  cleandrive remote-test            check SSH reachability of configured remote`);
+  cleandrive remote-test            check SSH reachability of configured remote
+
+offload (iCloud-style switch to the remote drive, see docs/offload-strategy.md):
+  cleandrive offload <file|dir…> [--dry-run] [--min=MB]   verified upload, leaves <name>.cloud
+  cleandrive fetch <file|stub|dir…> [--dry-run]           verified download, removes the stub
+  cleandrive offloaded [--json]                           what is offloaded / back local
+  cleandrive offload-candidates [--min=200] [--days=30] [--all-types] [--no-dupes] [--json]
+  cleandrive offload-verify                               re-hash remote copies (scrub)
+  cleandrive pin|unpin <path…>                            keep local / never propose`);
 }

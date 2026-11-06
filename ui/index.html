@@ -223,7 +223,11 @@ const esc = (s) => s.replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt
 
 async function api(path, body) {
   const r = await fetch(path, body ? { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) } : undefined);
-  return r.json();
+  const j = await r.json();
+  // the server refuses approvals the executor would refuse; say why instead of failing silently
+  if (!r.ok && j.error) alert('Not approved: ' + j.error);
+  if (j.refused?.length) alert('Not approved:\n' + j.refused.map((x) => '• ' + x.error).join('\n'));
+  return j;
 }
 
 function planOf(it) { return S.plan.items[it.id] || {}; }

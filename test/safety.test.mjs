@@ -150,3 +150,39 @@ test('run() kills a hung command at its timeout instead of blocking the scan', a
   const ok = await U.run('echo', ['hi'], { timeoutMs: 2000 });
   assert.deepEqual([ok.code, ok.out.trim(), ok.timedOut], [0, 'hi', undefined]);
 });
+
+test('actionRefusal: the preview agrees with the executor', () => {
+  const p = h('code', 'proj');
+  assert.match(A.actionRefusal(item(p, 'projects', 'rm')), /projects can only be archived/);
+  assert.equal(A.actionRefusal(item(p, 'projects', 'archive+rm')), null);
+  assert.match(A.actionRefusal(item(h('Library', 'Application Support', 'X'), 'appdata', 'rm')), /mark it reviewed/);
+  assert.equal(A.actionRefusal({ ...item(h('Library', 'Application Support', 'X'), 'appdata', 'rm'), reviewed: true }), null);
+  assert.match(A.actionRefusal(item(h('.claude', 'x'), 'cache', 'rm')), /user-protected/);
+  assert.equal(A.actionRefusal(item('~/.cache/foo', 'cache', 'rm')), null, '~ paths from the scan are expanded');
+  assert.match(A.actionRefusal(item(p, 'apps', 'review')), /not an executable action/);
+});
+
+test('CLI: approve refuses a forged project rm, and dry-run never promises a refused action', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const cli = (...a) => execFileSync(process.execPath, [path.resolve('bin/cleandrive.js'), ...a],
+    { env: process.env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).toString();
+  const data = U.DATA_DIR;
+  writeFileSync(path.join(data, 'latest.json'), JSON.stringify({ ts: 'x', disk: {}, items: [
+    { id: 'proj', path: '~/code/old', category: 'projects', suggest: 'archive', kb: 1 },
+    { id: 'npm', path: '~/.npm', category: 'pkgcache', suggest: 'clean', cleanCmd: 'npm cache clean --force', kb: 1 },
+  ] }));
+  writeFileSync(path.join(data, 'plan.json'), JSON.stringify({ items: {} }));
+  let out = '';
+  try { cli('approve', 'proj', '--action=rm'); } catch (e) { out = e.stdout; }
+  assert.match(out, /refused proj/);
+  assert.equal(A.loadPlan().items.proj, undefined, 'refused approval is not recorded');
+  try { cli('approve', 'nope'); } catch (e) { out = e.stdout; }
+  assert.match(out, /not in the current scan/);
+  // a forged plan entry (bypassing approve) is still shown as refused in the preview
+  writeFileSync(path.join(data, 'plan.json'), JSON.stringify({ items: {
+    proj: { status: 'approved', action: 'rm' }, npm: { status: 'approved' } } }));
+  out = cli('execute', '--dry-run');
+  assert.match(out, /✗ refused rm: ~\/code\/old/);
+  assert.match(out, /would clean: ~\/\.npm/);
+  assert.doesNotMatch(out, /would rm: ~\/code\/old/);
+});

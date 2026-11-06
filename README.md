@@ -256,7 +256,7 @@ test/                 safety-model tests (node:test, fake $HOME)
 ## Development
 
 ```bash
-npm test          # 15 tests, ~0.3 s, never touches your real home folder
+npm test          # 17 tests, ~0.3 s, never touches your real home folder
 ```
 
 **Roadmap** ([PLAN.md](PLAN.md)): **Linux support** (XDG caches, Docker images, journald, snap revisions) · MCP server for non-CLI agents · item lifecycle and checkbox selection in the dashboard ·

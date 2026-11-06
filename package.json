@@ -1,6 +1,6 @@
 {
   "name": "agent-cleandrive",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Safe disk cleanup that any AI agent can drive: the agent proposes, you approve, the tool enforces. Risk-tiered cleaning, checksum-verified archives to your own drive, iCloud-style offload. macOS today, Linux next. Zero dependencies.",
   "type": "module",
   "bin": {

@@ -5,7 +5,7 @@ import path from 'node:path';
 import { DATA_DIR, readJson, fmtGB, loadConfig } from '../lib/util.js';
 import { runScan, CATEGORIES } from '../lib/scan.js';
 import { serve } from '../lib/server.js';
-import { loadPlan, setPlanItem, approvedItems, executeItem, testRemote, archive } from '../lib/actions.js';
+import { loadPlan, setPlanItem, approvedItems, executeItem, testRemote, archive, actionRefusal, scanItem } from '../lib/actions.js';
 import { offloadPaths, fetchPaths, listOffloaded, findCandidates, verifyRemote, setPin } from '../lib/offload.js';
 
 const [, , cmd, ...args] = process.argv;
@@ -70,7 +70,12 @@ switch (cmd) {
   case 'approve': {
     const ids = args.filter((a) => !a.startsWith('--'));
     const action = (args.find((a) => a.startsWith('--action=')) || '').split('=')[1];
+    const plan = loadPlan();
     for (const id of ids) {
+      const it = scanItem(id);
+      if (!it) { console.log(`✗ ${id}: not in the current scan`); process.exitCode = 1; continue; }
+      const why = actionRefusal({ ...it, reviewed: plan.items[id]?.reviewed === true }, action || it.suggest);
+      if (why) { console.log(`✗ refused ${id} (${it.path}): ${why}`); process.exitCode = 1; continue; }
       setPlanItem(id, { status: 'approved', ...(action && { action }) });
       console.log(`approved ${id}${action ? ' → ' + action : ''}`);
     }
@@ -93,8 +98,13 @@ switch (cmd) {
     if (!items.length) { console.log('nothing approved'); break; }
     const dry = flag('--dry-run');
     for (const item of items) {
-      console.log(`${dry ? '[dry-run] would' : '▶'} ${item.plannedAction}: ${item.path} (${fmtGB(item.kb)})`);
-      if (dry) continue;
+      const why = actionRefusal(item);
+      if (dry) {
+        console.log(why ? `[dry-run] ✗ refused ${item.plannedAction}: ${item.path} — ${why}`
+          : `[dry-run] would ${item.plannedAction}: ${item.path} (${fmtGB(item.kb)})`);
+        continue;
+      }
+      console.log(`▶ ${item.plannedAction}: ${item.path} (${fmtGB(item.kb)})`);
       try {
         const r = await executeItem(item, { onData: (d) => process.stderr.write(d) });
         console.log(r.ok ? '  ✓ done' : `  ✗ failed: ${r.output.split('\n').pop()}`);

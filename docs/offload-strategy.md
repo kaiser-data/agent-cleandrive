@@ -1,18 +1,19 @@
-# Offload / fetch: an iCloud-style switch to rookstorage
+# Offload / fetch: an iCloud-style switch to your own drive
 
-Status: v1 implemented (`lib/offload.js`). Agreed with the user 2026-11-04.
+Status: v1 implemented (`lib/offload.js`), 2026-11-04. The reference setup is a
+7.3 TB USB HDD on an NVIDIA Jetson reached over Tailscale; any Linux box with
+SSH and a mounted drive works.
 
 ## Goal
 
-Big, rarely used files (mostly videos) live on rookstorage, the 7.3 TB HDD on
-the Jetson. On the Mac each one leaves a small placeholder, `<name>.cloud`.
+Big, rarely used files (mostly videos) live on the remote drive. On the Mac each one leaves a small placeholder, `<name>.cloud`.
 `fetch` brings the file back byte-for-byte. You can switch a file between
 **local** and **offloaded** as often as you like, and switching back is cheap
 because the remote copy stays.
 
 ## Hard requirements
 
-1. **No always-on process** on the Mac or the Jetson. That rules out Nextcloud,
+1. **No always-on process** on the Mac or the remote. That rules out Nextcloud,
    an rclone mount, launchd/systemd units and file watchers. All work happens
    inside one `cleandrive` command over on-demand SSH and rsync.
 2. **Reliability over speed.** A file is never lost, even if Wi-Fi drops,
@@ -69,7 +70,7 @@ once. An object is never overwritten and never deleted by offload or fetch.
 2. Hash locally (sha256, streamed). Record size and mtime.
 3. `checkRemoteDrive(size)`. The UUID-pinned drive must be mounted with room
    for size + 5%. If not, refuse.
-4. If the object already exists, re-hash it on the Jetson. If it matches, this
+4. If the object already exists, re-hash it on the remote. If it matches, this
    is a dedupe and nothing is uploaded.
 5. Otherwise `rsync --partial --timeout=120` to `objects/aa/<sha>.part`. On any
    failure, retry with backoff (default 5 attempts). `--partial` resumes the
@@ -101,8 +102,8 @@ once. An object is never overwritten and never deleted by offload or fetch.
 at a time. A stale lock (dead pid) is taken over.
 
 **Scrub:** `cleandrive offload-verify` re-hashes every remote object for
-offloaded files on the Jetson and reports any mismatch. Run it occasionally,
-since the Jetson has no daemon that would notice bit rot.
+offloaded files on the remote and reports any mismatch. Run it occasionally,
+since the remote has no daemon that would notice bit rot.
 
 ## Interfaces
 
@@ -126,6 +127,6 @@ for confirmation and stream into the live log.
 - Remote objects of files that were fetched and later deleted locally stay on
   the remote. A `offload gc` command is a follow-up (by design: nothing on the
   remote is ever deleted automatically).
-- Jetson auto-mount: the fstab entry has `x-systemd.device-timeout=10`, too
-  short for the USB HDD to spin up. Fix it on the Jetson (needs sudo):
-  `sudo sed -i 's/x-systemd.device-timeout=10/x-systemd.device-timeout=90/' /etc/fstab && sudo systemctl daemon-reload`.
+- USB drives on the remote may fail to auto-mount at boot if the fstab entry has
+  a short `x-systemd.device-timeout` (10 s is too short for a spinning HDD).
+  Raise it to 90 s and `sudo systemctl daemon-reload`.

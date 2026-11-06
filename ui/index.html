@@ -167,7 +167,7 @@
 </div>
 
 <section class="card">
-  <h2>Offload to rookstorage <span class="note" style="text-transform:none;letter-spacing:0;font-weight:400">— like iCloud: a verified copy goes to the Jetson, a small <code>.cloud</code> placeholder stays here</span></h2>
+  <h2>Offload to the remote drive <span class="note" style="text-transform:none;letter-spacing:0;font-weight:400">— like iCloud: a verified copy goes to your remote drive, a small <code>.cloud</code> placeholder stays here</span></h2>
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
     <button id="ofFind">Find candidates</button>
     <button class="primary" id="ofGo" disabled>Offload selected…</button>
@@ -177,7 +177,7 @@
     <thead><tr><th></th><th>File</th><th style="text-align:right">Size</th><th>State</th><th></th></tr></thead>
     <tbody id="ofRows"><tr><td colspan="5" class="note">No candidates yet. Click “Find candidates” (videos and other big media ≥ 200 MB, unused for 30 days, duplicates first).</td></tr></tbody>
   </table></div>
-  <div class="hint">Nothing runs in the background. The local file is removed only after its sha256 matches on the Jetson. Fetch downloads it, checks it again, and restores the original. The remote copy stays, so offloading it again is instant. CLI: <code>cleandrive offload / fetch / offloaded</code>.</div>
+  <div class="hint">Nothing runs in the background. The local file is removed only after its sha256 matches on the remote drive. Fetch downloads it, checks it again, and restores the original. The remote copy stays, so offloading it again is instant. CLI: <code>cleandrive offload / fetch / offloaded</code>.</div>
 </section>
 
 <div id="tip"></div>
@@ -446,7 +446,7 @@ async function refreshOffload() {
   $('ofFind').disabled = d.finding; $('ofFind').textContent = d.finding ? 'Searching…' : 'Find candidates';
   const selKB = cands.filter((c) => OF.sel.has(c.path)).reduce((s, c) => s + c.kb, 0);
   $('ofGo').disabled = !OF.sel.size || S.executing;
-  $('ofSummary').textContent = offloaded.length + ' offloaded (' + gb(offloaded.reduce((s, f) => s + f.size, 0) / 1024) + ' on the Jetson)'
+  $('ofSummary').textContent = offloaded.length + ' offloaded (' + gb(offloaded.reduce((s, f) => s + f.size, 0) / 1024) + ' on the remote drive)'
     + (cands.length ? ' · ' + cands.length + ' candidates, ' + gb(cands.reduce((s, c) => s + c.kb, 0)) : '')
     + (OF.sel.size ? ' · selected ' + gb(selKB) : '') + (d.candidates?.unreadable ? ' · ⚠ some folders unreadable (Full Disk Access)' : '');
   if (!list.length) return;
@@ -459,7 +459,7 @@ async function refreshOffload() {
     tr.innerHTML = '<td>' + (it.kind === 'cand' ? '<input type="checkbox"' + (OF.sel.has(it.path) ? ' checked' : '') + '>' : '☁︎') + '</td>'
       + '<td><div class="path">' + esc(sp) + '</div><div class="note">' + esc(sub) + '</div></td>'
       + '<td class="num">' + gb(it.kind === 'off' ? it.size / 1024 : it.kb) + '</td>'
-      + '<td><span class="st ' + (it.kind === 'off' ? 'done' : '') + '">' + (it.kind === 'off' ? 'on Jetson' : 'local') + '</span></td>'
+      + '<td><span class="st ' + (it.kind === 'off' ? 'done' : '') + '">' + (it.kind === 'off' ? 'remote' : 'local') + '</span></td>'
       + '<td><div class="rowbtns">' + (it.kind === 'off' ? '<button data-a="fetch">Fetch</button>' : '<button data-a="pin">Keep local</button>') + '</div></td>';
     const cb = tr.querySelector('input');
     if (cb) cb.onchange = () => { cb.checked ? OF.sel.add(it.path) : OF.sel.delete(it.path); refreshOffload(); };
@@ -474,7 +474,7 @@ async function refreshOffload() {
 $('ofFind').onclick = async () => { await api('/api/offload/candidates', {}); refreshOffload(); };
 $('ofGo').onclick = async () => {
   const paths = [...OF.sel];
-  const w = prompt(paths.length + ' file(s) go to the Jetson. Each one is verified before the local copy is removed.\nType OFFLOAD to confirm:');
+  const w = prompt(paths.length + ' file(s) go to the remote drive. Each one is verified before the local copy is removed.\nType OFFLOAD to confirm:');
   if ((w || '').trim() !== 'OFFLOAD') return;
   await api('/api/offload/run', { paths, confirm: 'OFFLOAD' });
   OF.sel.clear(); refreshOffload();

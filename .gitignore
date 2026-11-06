@@ -16,3 +16,9 @@ graphify-out/
 node_modules/
 .DS_Store
 *.log
+
+# Session handoff scratch file
+HANDOFF.md
+
+# Personal launch planning
+LAUNCH.md

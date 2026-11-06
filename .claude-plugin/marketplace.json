@@ -1,0 +1,11 @@
+{
+  "name": "cleandrive",
+  "owner": { "name": "Martin Kaiser", "url": "https://github.com/kaiser-data" },
+  "plugins": [
+    {
+      "name": "cleandrive",
+      "source": "./",
+      "description": "Free disk space on a Mac safely: Claude scans, proposes a risk-tiered cleanup plan, and only acts on the items you approve."
+    }
+  ]
+}

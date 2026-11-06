@@ -1,13 +1,23 @@
 {
   "name": "cleandrive",
-  "version": "0.1.0",
-  "description": "Disk cleanup dashboard: scan, categorize, plan, clean caches, archive to remote via rsync over Tailscale SSH",
+  "version": "0.2.0",
+  "description": "Risk-tiered Mac disk cleanup you approve, not a button you regret: clean caches, archive projects to your own drive over SSH with checksum verification, offload big media iCloud-style. Zero dependencies. Built to be driven by Claude Code.",
   "type": "module",
   "bin": { "cleandrive": "bin/cleandrive.js" },
+  "files": ["bin/cleandrive.js", "lib/", "ui/", "config.example.json", "docs/offload-strategy.md"],
   "scripts": {
     "scan": "node bin/cleandrive.js scan",
     "serve": "node bin/cleandrive.js serve",
-    "state": "node bin/cleandrive.js state"
+    "state": "node bin/cleandrive.js state",
+    "test": "node --test test/",
+    "prepublishOnly": "node --test test/"
   },
-  "engines": { "node": ">=20" }
+  "engines": { "node": ">=20" },
+  "os": ["darwin"],
+  "keywords": ["disk-cleanup", "macos", "disk-space", "cleanup", "rsync", "tailscale", "archive", "offload", "cli", "dashboard", "claude-code", "agent", "zero-dependencies"],
+  "author": "Martin Kaiser (https://github.com/kaiser-data)",
+  "license": "MIT",
+  "homepage": "https://github.com/kaiser-data/cleandrive#readme",
+  "repository": { "type": "git", "url": "git+https://github.com/kaiser-data/cleandrive.git" },
+  "bugs": { "url": "https://github.com/kaiser-data/cleandrive/issues" }
 }

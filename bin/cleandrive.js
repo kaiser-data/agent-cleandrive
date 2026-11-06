@@ -33,6 +33,13 @@ function printState() {
   const d = scan.disk;
   console.log(`scan: ${scan.ts}`);
   console.log(`disk: ${fmtGB(d.usedKB)} used of ${fmtGB(d.sizeKB)} (${d.pct}%), ${fmtGB(d.availKB)} free\n`);
+  if (scan.blocked?.length) {
+    const timedOut = scan.blocked.filter((b) => /timed out/.test(b.reason));
+    const partial = scan.blocked.length - timedOut.length;
+    for (const b of timedOut) console.log(`⚠ not measured: ${b.path.replace(process.env.HOME, '~')} — ${b.reason}`);
+    if (partial) console.log(`ℹ ${partial} folder(s) partly unreadable (macOS privacy). Sizes may be low; grant your terminal Full Disk Access for full numbers.`);
+    console.log('');
+  }
   for (const [key, meta] of Object.entries(CATEGORIES)) {
     const items = scan.items.filter((i) => i.category === key);
     if (!items.length) continue;

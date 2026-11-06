@@ -7,6 +7,11 @@ SSH/Tailscale with checksum verification).
 
 Zero npm dependencies on purpose — do not add packages.
 
+Tests: `npm test` (node:test, runs against a fake `$HOME`). Any change to a
+safety gate needs a test in `test/safety.test.mjs`. Published as the npm
+package `cleandrive` and as a Claude Code plugin (`.claude-plugin/`,
+`skills/cleandrive/SKILL.md`) — keep both version fields in sync with package.json.
+
 ## How Claude Code should drive it (the connector)
 
 The CLI and the JSON files in `data/` are the integration surface:
@@ -33,7 +38,8 @@ Typical planned-cleanup flow for a Claude session:
    `execute --dry-run`, show the output, then `execute`.
 4. Never approve/execute without the user confirming the specific items.
 
-Files:
+Files (in the repo for a git clone with `config.json`; otherwise in
+`~/.config/cleandrive/`; `$CLEANDRIVE_HOME` overrides both):
 - `data/latest.json` — last scan: `{ts, disk, items[]}`
 - `data/plan.json` — approval state per item id
 - `data/actions.log` — JSONL audit log of everything executed

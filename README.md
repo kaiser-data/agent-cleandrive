@@ -8,6 +8,8 @@
 Scan → sort by risk → approve → clean caches, archive projects to your own drive with checksum
 verification, or offload big videos iCloud-style. All of it can be driven by Claude Code.
 
+<sub>Built for, and on, an 8 GB MacBook Air that runs several Claude Code sessions a day.</sub>
+
 [![tests](https://github.com/kaiser-data/cleandrive/actions/workflows/test.yml/badge.svg)](https://github.com/kaiser-data/cleandrive/actions/workflows/test.yml)
 ![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=node.js&logoColor=white)
@@ -23,8 +25,8 @@ verification, or offload big videos iCloud-style. All of it can be driven by Cla
 
 > **Try it in 60 seconds** (read-only until you approve something):
 > ```bash
-> npx cleandrive scan     # ~1–3 min, nothing is changed
-> npx cleandrive serve    # dashboard → http://localhost:4499
+> npx mac-cleandrive scan     # ~1–3 min, nothing is changed
+> npx mac-cleandrive serve    # dashboard → http://localhost:4499
 > ```
 > Or in Claude Code: `/plugin install cleandrive --marketplace kaiser-data/cleandrive`, then ask *"my disk is full, what can I clean?"*
 
@@ -49,6 +51,24 @@ refused even when someone forges the action.
 | `df` says 56% full while macOS says the disk is full | Real APFS capacity: `used / (used + available)` |
 | The disk fills up again and you don't know why | Field-tested list of where the space actually goes ([below](#field-notes-where-the-space-actually-went)) |
 
+### Built on an 8 GB Mac
+
+I'm [Martin Kaiser](https://github.com/kaiser-data). I do agent-heavy development, with several Claude
+Code sessions, MCP servers, a browser and a local model, on a **base M2 MacBook Air: 8 GB RAM,
+228 GB disk**. That's a deliberate choice. Small hardware forces lean habits, and lean habits make
+agent work cheaper wherever it runs.
+
+The catch is that on a small Mac, **memory and disk are one problem.** With 8 GB, macOS swaps hard;
+on a normal workday swap sits around **7.9 of 8 GB**, and those swap files live in the same APFS
+container as your files. Each `npm install` or `uv sync` an agent runs adds gigabytes of
+dependencies. So the disk fills from two sides, and when free space runs out, swap has nowhere to
+grow and the whole machine stalls.
+
+CleanDrive is how I keep that machine usable without buying a bigger one. It makes the disk side
+predictable: dependency churn gets cleaned often and safely, finished projects move to a drive
+on my tailnet, and big videos become placeholders. Free space stays free, so swap has room. It
+manages disk only; it doesn't touch RAM or running processes.
+
 <table>
 <tr>
 <td width="50%" valign="top"><b>Light</b><br><img src="media/dashboard-light.png" alt="Dashboard in light mode: capacity bar, category breakdown, item table with approve buttons"></td>
@@ -63,7 +83,7 @@ refused even when someone forges the action.
 | Way | Command | Config & data live in |
 |---|---|---|
 | **Claude Code plugin** | `/plugin install cleandrive --marketplace kaiser-data/cleandrive` | `~/.config/cleandrive/` |
-| **npm** | `npm i -g cleandrive` (or `npx cleandrive …`) | `~/.config/cleandrive/` |
+| **npm** | `npm i -g mac-cleandrive` → command `cleandrive` (or `npx mac-cleandrive …`) | `~/.config/cleandrive/` |
 | **git clone** | `git clone https://github.com/kaiser-data/cleandrive && cd cleandrive && cp config.example.json config.json` | the repo (`config.json`, `data/`) |
 
 Needs macOS and Node ≥ 20. **No dependencies:** pure Node stdlib plus the system's `du`, `rsync`
@@ -161,13 +181,15 @@ default: **the tool knows what it must never delete.**
 
 ## Field notes: where the space actually went
 
-Lessons from running CleanDrive on a 228 GB MacBook that kept hitting 98% full (Sept–Nov 2026).
+Lessons from running CleanDrive on an 8 GB / 228 GB MacBook Air under daily agent workloads,
+which kept hitting 98% full (Sept–Nov 2026).
 These shaped the code and the [skill](skills/cleandrive/SKILL.md).
 
 | What we saw | What it taught us |
 |---|---|
 | `df` reported 56% while macOS said the disk was full | APFS volumes share one container. Real capacity is `used / (used + available)`. |
 | A scan ran for over an hour at 0% CPU | `du` blocks forever on other apps' privacy-protected containers. Every `du` now has a timeout, and unreadable paths are listed in `scan.blocked`. |
+| Swap stood at 7.9 of 8 GB on a normal workday | On an 8 GB Mac, swap is part of disk usage. Keep several GB free, or the machine stalls before the disk is technically full. |
 | Roughly 100 GB of "used" space never appeared in any scan | macOS privacy (TCC) hides Downloads, Documents, Desktop, Mail and Trash from the terminal. Grant **Full Disk Access** or the numbers stay low. |
 | 36 GB came back within five days of a cleanup | Most likely not a leak but dependency churn: `node_modules`, `.venv` and package caches regrow with every install. Clean them often; they are low-risk. |
 | Aerial wallpaper videos regrew to 5.9 GB in two days | Switching the wallpaper is not enough. The **screen saver and lock screen** also download Aerials. |
@@ -239,7 +261,7 @@ recursive project discovery and stale subfolders · scan speed.
 
 <div align="center">
 
-MIT licensed · built by [Martin Kaiser](https://github.com/kaiser-data) with [Claude Code](https://claude.com/claude-code)
+MIT licensed · built by [Martin Kaiser](https://github.com/kaiser-data) with [Claude Code](https://claude.com/claude-code), on 8 GB of RAM
 
 **Clean without fear.**
 

@@ -11,7 +11,7 @@ never try to work around a refusal.
 
 ## Running it
 
-Use `cleandrive` if it is on PATH (`npm i -g cleandrive`). Otherwise run
+Use `cleandrive` if it is on PATH (`npm i -g mac-cleandrive`). Otherwise run
 `node <plugin root>/bin/cleandrive.js` — the plugin root is two directories
 above this SKILL.md. Config and data live in `~/.config/cleandrive/`
 (created on first run; edit `projectRoots` and `remote` there).

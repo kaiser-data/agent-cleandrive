@@ -1,6 +1,6 @@
 {
   "name": "cleandrive",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Free disk space on a Mac safely: Claude scans, proposes a risk-tiered cleanup plan, and only acts on the items you approve.",
   "author": { "name": "Martin Kaiser", "url": "https://github.com/kaiser-data" },
   "homepage": "https://github.com/kaiser-data/cleandrive",

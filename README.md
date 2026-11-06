@@ -11,6 +11,7 @@ verification, or offload big videos iCloud-style. Works with Claude Code, Codex,
 <sub>Built for, and on, an 8 GB MacBook Air that runs several Claude Code sessions a day.</sub>
 
 [![tests](https://github.com/kaiser-data/agent-cleandrive/actions/workflows/test.yml/badge.svg)](https://github.com/kaiser-data/agent-cleandrive/actions/workflows/test.yml)
+[![npm](https://img.shields.io/npm/v/agent-cleandrive?logo=npm)](https://www.npmjs.com/package/agent-cleandrive)
 ![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=node.js&logoColor=white)
 ![platform](https://img.shields.io/badge/macOS-today-000000?logo=apple&logoColor=white) ![linux](https://img.shields.io/badge/Linux-next-lightgrey?logo=linux&logoColor=white)

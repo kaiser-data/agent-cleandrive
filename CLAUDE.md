@@ -9,7 +9,7 @@ Zero npm dependencies on purpose — do not add packages.
 
 Tests: `npm test` (node:test, runs against a fake `$HOME`). Any change to a
 safety gate needs a test in `test/safety.test.mjs`. Published as the npm
-package `mac-cleandrive` (command `cleandrive`) and as a Claude Code plugin (`.claude-plugin/`,
+package `agent-cleandrive` (command `cleandrive`) and as a Claude Code plugin (`.claude-plugin/`,
 `skills/cleandrive/SKILL.md`) — keep both version fields in sync with package.json.
 
 ## How Claude Code should drive it (the connector)

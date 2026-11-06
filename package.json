@@ -1,10 +1,18 @@
 {
-  "name": "mac-cleandrive",
-  "version": "0.2.1",
-  "description": "Keep a small Mac usable for agentic work: risk-tiered disk cleanup you approve, archive projects to your own drive with checksum verification, offload big media iCloud-style. Zero dependencies, low overhead, built to be driven by Claude Code.",
+  "name": "agent-cleandrive",
+  "version": "0.2.2",
+  "description": "Safe disk cleanup that any AI agent can drive: the agent proposes, you approve, the tool enforces. Risk-tiered cleaning, checksum-verified archives to your own drive, iCloud-style offload. macOS today, Linux next. Zero dependencies.",
   "type": "module",
-  "bin": { "cleandrive": "bin/cleandrive.js" },
-  "files": ["bin/cleandrive.js", "lib/", "ui/", "config.example.json", "docs/offload-strategy.md"],
+  "bin": {
+    "cleandrive": "bin/cleandrive.js"
+  },
+  "files": [
+    "bin/cleandrive.js",
+    "lib/",
+    "ui/",
+    "config.example.json",
+    "docs/offload-strategy.md"
+  ],
   "scripts": {
     "scan": "node bin/cleandrive.js scan",
     "serve": "node bin/cleandrive.js serve",
@@ -12,12 +20,43 @@
     "test": "node --test test/*.test.mjs",
     "prepublishOnly": "node --test test/*.test.mjs"
   },
-  "engines": { "node": ">=20" },
-  "os": ["darwin"],
-  "keywords": ["disk-cleanup", "macos", "disk-space", "cleanup", "rsync", "tailscale", "archive", "offload", "cli", "dashboard", "claude-code", "agent", "zero-dependencies", "low-resource", "apple-silicon", "agentic", "swap"],
+  "engines": {
+    "node": ">=20"
+  },
+  "os": [
+    "darwin"
+  ],
+  "keywords": [
+    "agent",
+    "agentic",
+    "ai-agent",
+    "apple-silicon",
+    "archive",
+    "claude-code",
+    "cleanup",
+    "cli",
+    "codex",
+    "cursor",
+    "dashboard",
+    "disk-cleanup",
+    "disk-space",
+    "low-resource",
+    "macos",
+    "mcp",
+    "offload",
+    "rsync",
+    "swap",
+    "tailscale",
+    "zero-dependencies"
+  ],
   "author": "Martin Kaiser (https://github.com/kaiser-data)",
   "license": "MIT",
-  "homepage": "https://github.com/kaiser-data/cleandrive#readme",
-  "repository": { "type": "git", "url": "git+https://github.com/kaiser-data/cleandrive.git" },
-  "bugs": { "url": "https://github.com/kaiser-data/cleandrive/issues" }
+  "homepage": "https://github.com/kaiser-data/agent-cleandrive#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaiser-data/agent-cleandrive.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kaiser-data/agent-cleandrive/issues"
+  }
 }

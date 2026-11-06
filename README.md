@@ -1,34 +1,34 @@
 <div align="center">
 
-# 🧹 CleanDrive
+# 🧹 agent-cleandrive
 
-### Your Mac is full. Your cleanup tool shouldn't be able to delete your work.
+### The disk cleaner your AI agent can't misuse.
 
-**A disk-cleanup planner that treats deletion as a plan you approve, not a button you regret.**
+**Your agent proposes the cleanup, you approve it, and the tool enforces the rules: a project can never be deleted, only archived and verified.**
 Scan → sort by risk → approve → clean caches, archive projects to your own drive with checksum
-verification, or offload big videos iCloud-style. All of it can be driven by Claude Code.
+verification, or offload big videos iCloud-style. Works with Claude Code, Codex, Cursor, or no agent at all.
 
 <sub>Built for, and on, an 8 GB MacBook Air that runs several Claude Code sessions a day.</sub>
 
-[![tests](https://github.com/kaiser-data/cleandrive/actions/workflows/test.yml/badge.svg)](https://github.com/kaiser-data/cleandrive/actions/workflows/test.yml)
+[![tests](https://github.com/kaiser-data/agent-cleandrive/actions/workflows/test.yml/badge.svg)](https://github.com/kaiser-data/agent-cleandrive/actions/workflows/test.yml)
 ![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=node.js&logoColor=white)
-![macOS](https://img.shields.io/badge/macOS-APFS-000000?logo=apple&logoColor=white)
-![Claude Code](https://img.shields.io/badge/Claude_Code-plugin_%2B_skill-D97757?logo=anthropic&logoColor=white)
+![platform](https://img.shields.io/badge/macOS-today-000000?logo=apple&logoColor=white) ![linux](https://img.shields.io/badge/Linux-next-lightgrey?logo=linux&logoColor=white)
+![agents](https://img.shields.io/badge/agents-Claude_Code_%C2%B7_Codex_%C2%B7_Cursor-D97757)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 
 <br>
 
-![CleanDrive demo: scan, approve two caches, type FREE, watch them get cleaned](media/demo.gif)
+![agent-cleandrive demo: scan, approve two caches, type FREE, watch them get cleaned](media/demo.gif)
 
 </div>
 
 > **Try it in 60 seconds** (read-only until you approve something):
 > ```bash
-> npx mac-cleandrive scan     # ~1–3 min, nothing is changed
-> npx mac-cleandrive serve    # dashboard → http://localhost:4499
+> npx agent-cleandrive scan     # ~1–3 min, nothing is changed
+> npx agent-cleandrive serve    # dashboard → http://localhost:4499
 > ```
-> Or in Claude Code: `/plugin install cleandrive --marketplace kaiser-data/cleandrive`, then ask *"my disk is full, what can I clean?"*
+> Or in Claude Code: `/plugin install cleandrive --marketplace kaiser-data/agent-cleandrive`, then ask *"my disk is full, what can I clean?"*
 
 ---
 
@@ -37,13 +37,13 @@ verification, or offload big videos iCloud-style. All of it can be driven by Cla
 Mac disk cleaners fall into two camps. **Dumb** ones blindly wipe `~/Library/Caches` and hope.
 **Dangerous** ones offer "free up 200 GB" in one click and take last week's project with it.
 
-CleanDrive starts from one hard rule: **nothing is deleted unless it can be regenerated, or has
+agent-cleandrive starts from one hard rule: **nothing is deleted unless it can be regenerated, or has
 been verified on another disk first.** Caches can go, because apps rebuild them. Projects can only
 leave the machine by being copied to your drive and checksum-verified before the local copy is
 removed. Paths you never want touched, such as your Claude Code history, are **hard-locked** and
 refused even when someone forges the action.
 
-| Without CleanDrive | With CleanDrive |
+| Without it | With agent-cleandrive |
 |---|---|
 | "Free up 40 GB?" — and you don't know what's in it | Every item has a category, a risk level and a reason |
 | Deleting a project is one `rm -rf` away | Projects can't be `rm`-ed at all, only archived and verified |
@@ -64,7 +64,7 @@ container as your files. Each `npm install` or `uv sync` an agent runs adds giga
 dependencies. So the disk fills from two sides, and when free space runs out, swap has nowhere to
 grow and the whole machine stalls.
 
-CleanDrive is how I keep that machine usable without buying a bigger one. It makes the disk side
+agent-cleandrive is how I keep that machine usable without buying a bigger one. It makes the disk side
 predictable: dependency churn gets cleaned often and safely, finished projects move to a drive
 on my tailnet, and big videos become placeholders. Free space stays free, so swap has room. It
 manages disk only; it doesn't touch RAM or running processes.
@@ -82,12 +82,12 @@ manages disk only; it doesn't touch RAM or running processes.
 
 | Way | Command | Config & data live in |
 |---|---|---|
-| **Claude Code plugin** | `/plugin install cleandrive --marketplace kaiser-data/cleandrive` | `~/.config/cleandrive/` |
-| **npm** | `npm i -g mac-cleandrive` → command `cleandrive` (or `npx mac-cleandrive …`) | `~/.config/cleandrive/` |
-| **git clone** | `git clone https://github.com/kaiser-data/cleandrive && cd cleandrive && cp config.example.json config.json` | the repo (`config.json`, `data/`) |
+| **Claude Code plugin** | `/plugin install cleandrive --marketplace kaiser-data/agent-cleandrive` | `~/.config/cleandrive/` |
+| **npm** | `npm i -g agent-cleandrive` → command `cleandrive` (or `npx agent-cleandrive …`) | `~/.config/cleandrive/` |
+| **git clone** | `git clone https://github.com/kaiser-data/agent-cleandrive && cd cleandrive && cp config.example.json config.json` | the repo (`config.json`, `data/`) |
 
-Needs macOS and Node ≥ 20. **No dependencies:** pure Node stdlib plus the system's `du`, `rsync`
-and `ssh`. On first run CleanDrive writes a default `config.json`. Point `projectRoots` at your
+Needs macOS and Node ≥ 20 (Linux support is next on the roadmap). **No dependencies:** pure Node stdlib plus the system's `du`, `rsync`
+and `ssh`. On first run it writes a default `config.json`. Point `projectRoots` at your
 code folders and, if you want archiving, set `remote`.
 
 ---
@@ -102,7 +102,7 @@ code folders and, if you want archiving, set `remote`.
 4. **Execute.** In the dashboard you type `FREE`; in the CLI you run `cleandrive execute`. Every
    step is logged to `data/actions.log`.
 
-| Category | Risk | What CleanDrive allows | Example |
+| Category | Risk | What it allows | Example |
 |---|---|---|---|
 | `pkgcache` | low | official clean (npm/uv/brew/pnpm/bun), or rm | *`~/.npm` — 935 MB* |
 | `cache` | low | rm, the app rebuilds it | *`~/Library/Caches/com.spotify.client`* |
@@ -125,7 +125,7 @@ and **[covered by tests](test/safety.test.mjs)** that run against a fake `$HOME`
   `appdata`/`models` after an explicit review. A project can leave only via `archive+rm`.
 - **Archive, verify, then delete.** `rsync -aHR` to the remote, then a second `rsync -c` checksum
   pass. The local copy goes only if that pass reports zero content differences.
-- **The drive must really be there.** Before every archive or offload, CleanDrive checks over SSH
+- **The drive must really be there.** Before every archive or offload, the tool checks over SSH
   that `remote.path` sits on the expected drive (`remote.uuid`), not on an empty mount point on the
   remote's system disk, and that there is room for the item + 5%.
 - **Protected paths are hard-locked.** `config.protected` entries are flagged 🔒, forced to `keep`,
@@ -158,11 +158,16 @@ The design is in [`docs/offload-strategy.md`](docs/offload-strategy.md).
 
 ---
 
-## Claude Code as the driver
+## Any agent can drive it
 
-The CLI speaks `--json` and the state is plain files, so an agent can run the whole loop. The
-plugin's [skill](skills/cleandrive/SKILL.md) teaches Claude the workflow: read the scan, propose a
-plan grouped by risk, and **act only on the items you confirm**.
+The CLI speaks `--json` and the state is plain files, so any coding agent can run the whole loop.
+The safety gates live in the executor, not in the prompt: **an agent that misreads the plan still
+cannot delete a project or a protected path.**
+
+- **Claude Code:** install the plugin. Its [skill](skills/cleandrive/SKILL.md) teaches the workflow: read the scan, propose a plan grouped by risk, act only on the items you confirm.
+- **Codex, Cursor, Gemini CLI, others:** paste this into the agent's instructions (`AGENTS.md`, rules file):
+
+  > To free disk space, use the `cleandrive` CLI. Run `cleandrive state --json`, propose a plan grouped by category with sizes, and wait for my confirmation of specific items. Then `cleandrive approve <ids>`, show `cleandrive execute --dry-run`, and run `cleandrive execute` only after I say yes. Never delete files by hand that cleandrive refuses.
 
 ```bash
 cleandrive state --json                    # items: {id, path, kb, category, suggest, note}
@@ -174,14 +179,14 @@ cleandrive execute                         # only after you say yes
 > *"Here are 33 GB of package caches and 14 GB of `node_modules`, all regenerable. Clean them?
 > And 3 projects untouched since spring, 21 GB. Archive and verify them to your drive first?"*
 
-CleanDrive was itself built in Claude Code sessions. That is why protecting agent history is a
+agent-cleandrive was itself built in Claude Code sessions. That is why protecting agent history is a
 default: **the tool knows what it must never delete.**
 
 ---
 
 ## Field notes: where the space actually went
 
-Lessons from running CleanDrive on an 8 GB / 228 GB MacBook Air under daily agent workloads,
+Lessons from running agent-cleandrive on an 8 GB / 228 GB MacBook Air under daily agent workloads,
 which kept hitting 98% full (Sept–Nov 2026).
 These shaped the code and the [skill](skills/cleandrive/SKILL.md).
 
@@ -253,7 +258,7 @@ test/                 safety-model tests (node:test, fake $HOME)
 npm test          # 15 tests, ~0.3 s, never touches your real home folder
 ```
 
-**Roadmap** ([PLAN.md](PLAN.md)): item lifecycle and checkbox selection in the dashboard ·
+**Roadmap** ([PLAN.md](PLAN.md)): **Linux support** (XDG caches, Docker images, journald, snap revisions) · MCP server for non-CLI agents · item lifecycle and checkbox selection in the dashboard ·
 "free up X GB" goal mode · known space-hog catalog · coverage bar (what the scan can't see) ·
 recursive project discovery and stale subfolders · scan speed.
 
